@@ -1,0 +1,57 @@
+# Prometheus Configuration for NesNes Webstore
+global:
+  scrape_interval: 15s          # How often to scrape targets
+  evaluation_interval: 15s       # How often to evaluate rules
+  external_labels:
+    monitor: 'nesnes-monitor'
+
+# Alertmanager configuration (optional, for future use)
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: []
+
+# Rule files (optional, for future use)
+rule_files: []
+
+# Scrape configurations - Define what to monitor
+scrape_configs:
+  # Prometheus monitors itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+
+  # NesNes Node.js Application
+  # Note: Requires adding metrics endpoint to the app (we'll do this next)
+  - job_name: 'nesnes-app'
+    static_configs:
+      - targets: ['nesnes-app:5000']
+        labels:
+          service: 'nesnes-api'
+    metrics_path: /metrics
+    scrape_interval: 10s
+
+  # Kong API Gateway metrics
+  - job_name: 'kong'
+    static_configs:
+      - targets: ['nesnes-kong:8001']
+        labels:
+          service: 'kong-gateway'
+    metrics_path: /metrics
+
+  # Redis metrics (using Redis exporter would be better, but basic for now)
+  # For production, add redis_exporter container
+
+  # PostgreSQL metrics (using pg_exporter would be better)
+  # For production, add postgres_exporter container
+
+  # Elasticsearch metrics
+  - job_name: 'elasticsearch'
+    static_configs:
+      - targets: ['nesnes-elasticsearch:9200']
+        labels:
+          service: 'elasticsearch'
+    metrics_path: /_prometheus/metrics
+    scrape_interval: 30s

@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - WebStore</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <h1 id="dashboard-title">NesNes Dashboard</h1>
+            </div>
+            <div class="nav-menu">
+                <a href="/index.html">Shop</a>
+                <a href="/pages/cart.html">Cart (<span id="cart-count">0</span>)</a>
+                <span id="user-info" style="display: none;"></span>
+                <a href="#" id="logout-link">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Container -->
+    <div class="admin-container container">
+        <!-- Tab Navigation -->
+        <div style="margin-bottom: 2rem;">
+            <button class="btn btn-primary" onclick="showTab('products')">Products</button>
+            <button class="btn btn-primary" onclick="showTab('orders')">Orders</button>
+            <button class="btn btn-primary" onclick="showTab('reports')">Reports</button>
+            <button class="btn btn-primary" onclick="showTab('users')">Users</button>
+            <button class="btn btn-primary" onclick="showTab('categories')">Categories</button>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="products-tab" class="admin-section">
+            <h2>Product Management</h2>
+            <button class="btn btn-success" onclick="showAddProductModal()">Add New Product</button>
+            <div id="products-table-container" style="margin-top: 2rem;"></div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders-tab" class="admin-section" style="display: none;">
+            <h2>Order Management</h2>
+            <div id="order-stats" style="margin-bottom: 2rem;"></div>
+            <div id="orders-table-container"></div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports-tab" class="admin-section" style="display: none;">
+            <h2>Sales Reports</h2>
+
+            <div style="margin-bottom: 2rem;">
+                <h3>Daily Earnings</h3>
+                <input type="date" id="daily-date" class="filter-input" style="width: 200px;">
+                <button class="btn btn-primary" onclick="loadDailyEarnings()">Load</button>
+                <div id="daily-earnings-result"></div>
+            </div>
+
+            <div style="margin-bottom: 2rem;">
+                <h3>Monthly Earnings</h3>
+                <select id="month-select" class="filter-select" style="width: 150px;"></select>
+                <select id="year-select" class="filter-select" style="width: 150px;"></select>
+                <button class="btn btn-primary" onclick="loadMonthlyEarnings()">Load</button>
+                <div id="monthly-earnings-result"></div>
+            </div>
+
+            <div>
+                <h3>Top Selling Products</h3>
+                <select id="period-select" class="filter-select" style="width: 150px;">
+                    <option value="">All Time</option>
+                    <option value="week">Last Week</option>
+                    <option value="month">Last Month</option>
+                    <option value="year">Last Year</option>
+                </select>
+                <button class="btn btn-primary" onclick="loadTopSelling()">Load</button>
+                <div id="top-selling-result"></div>
+            </div>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="users-tab" class="admin-section" style="display: none;">
+            <h2>User Management (Admin Only)</h2>
+            <div id="users-table-container"></div>
+        </div>
+
+        <!-- Categories Tab -->
+        <div id="categories-tab" class="admin-section" style="display: none;">
+            <h2>Manage Categories, Brands, Sizes, Colors</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+                <div>
+                    <h3>Categories</h3>
+                    <button class="btn btn-success" onclick="showAddModal('category')">Add Category</button>
+                    <div id="categories-list"></div>
+                </div>
+                <div>
+                    <h3>Brands</h3>
+                    <button class="btn btn-success" onclick="showAddModal('brand')">Add Brand</button>
+                    <div id="brands-list"></div>
+                </div>
+                <div>
+                    <h3>Sizes</h3>
+                    <button class="btn btn-success" onclick="showAddModal('size')">Add Size</button>
+                    <div id="sizes-list"></div>
+                </div>
+                <div>
+                    <h3>Colors</h3>
+                    <button class="btn btn-success" onclick="showAddModal('color')">Add Color</button>
+                    <div id="colors-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeProductModal()">&times;</span>
+            <h2 id="product-modal-title">Add Product</h2>
+            <form id="product-form">
+                <div class="form-group">
+                    <label>Name *</label>
+                    <input type="text" id="product-name" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="product-description" class="form-control"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Price *</label>
+                    <input type="number" step="0.01" id="product-price" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Quantity *</label>
+                    <input type="number" id="product-quantity" class="form-control" required>
+                </div>
+                <div class="form-group">
+                    <label>Category *</label>
+                    <select id="product-category" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Brand *</label>
+                    <select id="product-brand" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Size *</label>
+                    <select id="product-size" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Color *</label>
+                    <select id="product-color" class="form-control" required></select>
+                </div>
+                <div class="form-group">
+                    <label>Gender *</label>
+                    <select id="product-gender" class="form-control" required></select>
+                </div>
+                <button type="submit" class="btn btn-success">Save Product</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/auth.js"></script>
+    <script src="/js/cart.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

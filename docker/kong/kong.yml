@@ -1,0 +1,104 @@
+_format_version: "3.0"
+_transform: true
+
+# ===========================================
+# SERVICES - Backend API service
+# ===========================================
+services:
+  - name: nesnes-api
+    url: http://nesnes-app:5000
+    connect_timeout: 60000
+    write_timeout: 60000
+    read_timeout: 60000
+    retries: 3
+    routes:
+      # Main API route - forward all /api requests
+      - name: api-route
+        paths:
+          - /api
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - PUT
+          - DELETE
+          - PATCH
+          - OPTIONS
+
+      # GraphQL route
+      - name: graphql-route
+        paths:
+          - /graphql
+        strip_path: false
+        methods:
+          - GET
+          - POST
+          - OPTIONS
+
+      # Legacy routes (backwards compatibility)
+      - name: legacy-products
+        paths:
+          - /products
+        strip_path: false
+      - name: legacy-auth
+        paths:
+          - /auth
+        strip_path: false
+      - name: legacy-search
+        paths:
+          - /search
+        strip_path: false
+      - name: legacy-orders
+        paths:
+          - /orders
+        strip_path: false
+      - name: legacy-categories
+        paths:
+          - /categories
+        strip_path: false
+      - name: legacy-brands
+        paths:
+          - /brands
+        strip_path: false
+
+# ===========================================
+# PLUGINS - API Gateway features
+# ===========================================
+plugins:
+  # Rate Limiting - 100 requests per minute per IP
+  - name: rate-limiting
+    config:
+      minute: 100
+      policy: local
+      fault_tolerant: true
+      hide_client_headers: false
+
+  # CORS support
+  - name: cors
+    config:
+      origins:
+        - "*"
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+      headers:
+        - Accept
+        - Authorization
+        - Content-Type
+        - X-Cache
+      exposed_headers:
+        - X-RateLimit-Limit-Minute
+        - X-RateLimit-Remaining-Minute
+        - X-Cache
+      credentials: true
+      max_age: 3600
+
+  # Request logging
+  - name: file-log
+    config:
+      path: /dev/stdout
+      reopen: true
