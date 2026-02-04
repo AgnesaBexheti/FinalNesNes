@@ -100,6 +100,15 @@ const Admin = () => {
 
   const loadOrders = async () => {
     const response = await orderAPI.getAll();
+    console.log('Orders from API:', response.data);
+    if (response.data.length > 0) {
+      console.log('First order details:', {
+        id: response.data[0].id,
+        totalPrice: response.data[0].totalPrice,
+        Client: response.data[0].Client,
+        OrderItems: response.data[0].OrderItems
+      });
+    }
     setOrders(response.data);
   };
 
@@ -126,6 +135,25 @@ const Admin = () => {
   const loadGenders = async () => {
     const response = await genderAPI.getAll();
     setGenders(response.data);
+  };
+
+  // Calculate order total from items if totalPrice is not set
+  const calculateOrderTotal = (order) => {
+    // Check both camelCase and snake_case for totalPrice
+    const totalPrice = order.totalPrice || order.total_price;
+    if (totalPrice && parseFloat(totalPrice) > 0) {
+      return parseFloat(totalPrice).toFixed(2);
+    }
+    // Fallback: calculate from order items
+    if (order.OrderItems && order.OrderItems.length > 0) {
+      const total = order.OrderItems.reduce((sum, item) => {
+        // Handle both camelCase and snake_case field names
+        const price = item.priceAtOrder || item.price_at_order || item.Product?.price || 0;
+        return sum + (parseFloat(price) * item.quantity);
+      }, 0);
+      return total.toFixed(2);
+    }
+    return '0.00';
   };
 
   const loadReports = async () => {
@@ -504,13 +532,13 @@ const Admin = () => {
                 {orders.map((order) => (
                   <tr key={order.id}>
                     <td>#{order.id}</td>
-                    <td>{order.Client?.name || 'N/A'}</td>
+                    <td>{order.Client?.fullName || order.Client?.full_name || 'N/A'}</td>
                     <td>
                       <span className={`status-badge status-${order.status}`}>
                         {order.status}
                       </span>
                     </td>
-                    <td>${parseFloat(order.totalPrice || 0).toFixed(2)}</td>
+                    <td>${calculateOrderTotal(order)}</td>
                     <td>{new Date(order.createdAt).toLocaleDateString()}</td>
                     <td>
                       <select
@@ -519,7 +547,7 @@ const Admin = () => {
                         className="form-input"
                       >
                         <option value="pending">Pending</option>
-                        <option value="confirmed">Confirmed</option>
+                        <option value="processing">Processing</option>
                         <option value="shipped">Shipped</option>
                         <option value="delivered">Delivered</option>
                         <option value="cancelled">Cancelled</option>
@@ -595,18 +623,25 @@ const Admin = () => {
             <div className="report-card">
               <h3>Monthly Earnings</h3>
               <p className="report-value">
-                ${parseFloat(reports.monthly?.total_monthly_earnings || 0).toFixed(2)}
+                ${parseFloat(reports.monthly?.total_earnings || 0).toFixed(2)}
               </p>
               <p className="report-label">This Month</p>
             </div>
             <div className="report-card">
               <h3>Top Selling Products</h3>
-              {reports.topSelling?.products?.slice(0, 5).map((product, index) => (
-                <div key={index} className="top-product">
-                  <span>{product.name}</span>
-                  <span>{product.total_sold} sold</span>
-                </div>
-              ))}
+              <div className="top-products-list">
+                {reports.topSelling?.top_selling_products?.slice(0, 5).map((product, index) => (
+                  <div key={index} className="top-product-item">
+                    <div className="product-rank">#{index + 1}</div>
+                    <div className="product-info">
+                      <span className="product-name">{product.product_name}</span>
+                      <span className="product-stats">
+                        {product.total_quantity_sold} sold · ${product.total_revenue}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>

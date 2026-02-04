@@ -41,15 +41,21 @@ const Cart = () => {
     setError('');
     setLoading(true);
 
+    // Calculate total before sending
+    const totalAmount = calculateTotal();
+
     try {
       const orderData = {
         client: clientInfo,
         items: cart.map((item) => ({
           productId: item.id,
           quantity: item.quantity,
+          price: parseFloat(item.price), // Include price for verification
         })),
+        totalPrice: totalAmount, // Pass total to backend
       };
 
+      console.log('Sending order data:', orderData);
       await orderAPI.create(orderData);
       setSuccess(true);
       clearCart();
@@ -65,10 +71,12 @@ const Cart = () => {
 
   if (success) {
     return (
-      <div className="container">
-        <div className="success-message">
-          <h2>Order placed successfully!</h2>
-          <p>Redirecting to home page...</p>
+      <div className="order-success-page">
+        <div className="order-success-content">
+          <div className="success-icon">✓</div>
+          <h1>ORDER CONFIRMED</h1>
+          <p>Thank you for your purchase</p>
+          <span className="redirect-text">Redirecting to home page...</span>
         </div>
       </div>
     );
@@ -76,11 +84,12 @@ const Cart = () => {
 
   if (cart?.length === 0) {
     return (
-      <div className="container">
-        <div className="empty-cart">
-          <h2>Your cart is empty</h2>
+      <div className="empty-cart-page">
+        <div className="empty-cart-content">
+          <h1>YOUR BAG IS EMPTY</h1>
+          <p>Looks like you haven't added anything yet</p>
           <button onClick={() => navigate('/')} className="btn btn-primary">
-            Continue Shopping
+            CONTINUE SHOPPING
           </button>
         </div>
       </div>
@@ -88,8 +97,8 @@ const Cart = () => {
   }
 
   return (
-    <div className="container">
-      <h1>Shopping Cart</h1>
+    <div className="cart-page">
+      <h1 className="cart-title">SHOPPING BAG</h1>
       <div className="cart-container">
         <div className="cart-items">
           <h2>Cart Items ({cart?.length})</h2>

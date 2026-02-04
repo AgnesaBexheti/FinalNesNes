@@ -90,9 +90,9 @@ exports.createOrder = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    const { client, items } = req.body;
+    const { client, items, totalPrice: frontendTotal } = req.body;
 
-    console.log({client});
+    console.log('Order request:', { client, itemCount: items?.length, frontendTotal });
 
     // Validate input
     if (!client || !client.name || !client.email) {
@@ -118,10 +118,11 @@ exports.createOrder = async (req, res) => {
       }, { transaction });
     }
 
-    // Create order
+    // Create order with initial totalPrice from frontend (will be verified/updated below)
     const order = await Order.create({
       clientId: clientRecord.id,
-      status: 'pending'
+      status: 'pending',
+      totalPrice: frontendTotal || 0
     }, { transaction });
 
     // Process order items
@@ -181,10 +182,13 @@ exports.createOrder = async (req, res) => {
       }, { transaction });
     }
 
-    // Save the total price to the order
-    await order.update({ totalPrice: totalAmount }, { transaction });
+    // Save the calculated total price to the order (overrides frontend value for security)
+    console.log('Saving totalPrice:', totalAmount);
+    order.totalPrice = totalAmount;
+    await order.save({ transaction });
 
     await transaction.commit();
+    console.log('Order committed with totalPrice:', order.totalPrice);
 
     // Fetch complete order with relations
     const completeOrder = await Order.findByPk(order.id, {
