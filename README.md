@@ -271,33 +271,7 @@ Use the admin dashboard to add:
 3. View orders and update status
 4. Generate reports
 
-## Assessment Criteria Coverage
 
- **Database Design (10%)** - Complete relational database with all required tables
-
- **API Structure (35%)** - Well-defined RESTful API endpoints for all operations
-
- **Advanced Search & Quantity APIs (10%)** - Fully functional search with filters and real-time quantity tracking
-
- **Report Generation APIs (10%)** - Daily/monthly earnings and top-selling products reports
-
- **Web Services Integration & Frontend (25%)** - Complete frontend with all features integrated
-
- **Code Quality & Documentation (10%)** - Clean code structure, comprehensive documentation
-
-## Future Enhancements
-
-- Product images upload
-- Payment gateway integration
-- Email notifications
-- Product reviews and ratings
-- Wishlist functionality
-- Advanced analytics dashboard
-- Export reports to CSV/PDF
-- Product variants
-- Inventory alerts
-
-## Troubleshooting
 
 ### Database Connection Issues
 - Verify PostgreSQL is running
@@ -313,9 +287,7 @@ Use the admin dashboard to add:
 - Change PORT in `.env`
 - Stop other processes using port 5000
 
-## License
 
-This project is created for educational purposes as part of Assignment #1.
 
 ## Author
 
