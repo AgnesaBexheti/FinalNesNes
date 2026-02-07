@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
-  const { user, isAuthenticated, logout, isAdmin, isAdvanced } = useAuth();
+  const { user, isAuthenticated, logout, isAdmin, isManager } = useAuth();
   const { getTotalItems } = useCart();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
@@ -77,7 +77,7 @@ const Navbar = () => {
             {isAuthenticated ? (
               <>
                 <span className="menu-user-info">{user?.username} ({user?.roleName})</span>
-                {(isAdmin() || isAdvanced()) && (
+                {(isAdmin() || isManager()) && (
                   <Link to="/admin" onClick={closeMenu}>Dashboard</Link>
                 )}
                 <button onClick={handleLogout} className="menu-logout">Log Out</button>

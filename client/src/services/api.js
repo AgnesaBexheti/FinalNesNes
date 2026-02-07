@@ -109,6 +109,16 @@ export const genderAPI = {
   delete: (id) => api.delete(`/genders/${id}`),
 };
 
+// Discount APIs
+export const discountAPI = {
+  getAll: () => api.get('/discounts'),
+  create: (data) => api.post('/discounts', data),
+  update: (id, data) => api.put(`/discounts/${id}`, data),
+  activate: (id) => api.patch(`/discounts/${id}/activate`),
+  deactivate: (id) => api.patch(`/discounts/${id}/deactivate`),
+  delete: (id) => api.delete(`/discounts/${id}`),
+};
+
 // Report APIs
 export const reportAPI = {
   getDailyEarnings: (date) => api.get('/reports/earnings/daily', { params: { date } }),

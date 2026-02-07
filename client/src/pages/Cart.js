@@ -120,7 +120,17 @@ const Cart = () => {
                     {item.Size?.name && <span className="meta-badge">Size: {item.Size.name}</span>}
                     {item.Color?.name && <span className="meta-badge">Color: {item.Color.name}</span>}
                   </div>
-                  <p className="cart-item-price">Price: ${parseFloat(item.price).toFixed(2)}</p>
+                  <p className="cart-item-price">
+                    {item.originalPrice ? (
+                      <>
+                        <span className="original-price">${parseFloat(item.originalPrice).toFixed(2)}</span>
+                        {' '}
+                        <span className="discounted-price">${parseFloat(item.price).toFixed(2)}</span>
+                      </>
+                    ) : (
+                      <>Price: ${parseFloat(item.price).toFixed(2)}</>
+                    )}
+                  </p>
                 </div>
                 <div className="cart-item-actions">
                   <div className="quantity-control">

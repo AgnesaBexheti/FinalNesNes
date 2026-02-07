@@ -75,7 +75,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAdmin = () => user?.roleName === 'admin';
-  const isAdvanced = () => user?.roleName === 'advanced' || user?.roleName === 'admin';
+  const isManager = () => user?.roleName === 'manager' || user?.roleName === 'advanced' || user?.roleName === 'admin';
 
   const value = {
     user,
@@ -85,7 +85,7 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isAdmin,
-    isAdvanced,
+    isManager,
     isAuthenticated: !!token,
   };
 

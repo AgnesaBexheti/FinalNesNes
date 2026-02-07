@@ -31,8 +31,8 @@ Size.hasMany(Product, { foreignKey: "sizeId" });
 Product.belongsTo(Gender, { foreignKey: "genderId" });
 Gender.hasMany(Product, { foreignKey: "genderId" });
 
-Discount.belongsTo(Product);
-Product.hasMany(Discount);
+Discount.belongsTo(Product, { foreignKey: "productId" });
+Product.hasMany(Discount, { foreignKey: "productId" });
 
 Order.belongsTo(Client);
 Client.hasMany(Order);

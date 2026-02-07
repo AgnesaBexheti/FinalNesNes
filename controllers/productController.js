@@ -1,4 +1,4 @@
-const { Product, Category, Brand, Color, Size, Gender, OrderItem } = require("../models");
+const { Product, Category, Brand, Color, Size, Gender, OrderItem, Discount } = require("../models");
 const { sequelize } = require("../models");
 const { addProductLinks, addProductCollectionLinks } = require("../utils/hateoas");
 const { cache } = require("../config/redis");
@@ -26,7 +26,8 @@ exports.getAllProducts = async (req, res) => {
           { model: Brand, attributes: ['id', 'name'] },
           { model: Color, attributes: ['id', 'name'] },
           { model: Size, attributes: ['id', 'name'] },
-          { model: Gender, attributes: ['id', 'name'] }
+          { model: Gender, attributes: ['id', 'name'] },
+          { model: Discount, where: { active: true }, required: false, attributes: ['id', 'percentage', 'active'] }
         ]
       });
 
@@ -61,7 +62,10 @@ exports.getProductById = async (req, res) => {
     if (!product) {
       // Cache miss - fetch from database
       product = await Product.findByPk(req.params.id, {
-        include: [Category, Brand, Color, Size, Gender]
+        include: [
+          Category, Brand, Color, Size, Gender,
+          { model: Discount, where: { active: true }, required: false, attributes: ['id', 'percentage', 'active'] }
+        ]
       });
 
       if (!product) return res.status(404).json({ message: "Product not found" });

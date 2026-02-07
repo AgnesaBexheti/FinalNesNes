@@ -10,10 +10,11 @@ import {
   colorAPI,
   genderAPI,
   reportAPI,
+  discountAPI,
 } from '../services/api';
 
 const Admin = () => {
-  const { isAdmin, isAdvanced } = useAuth();
+  const { isAdmin, isManager } = useAuth();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
@@ -24,9 +25,16 @@ const Admin = () => {
   const [colors, setColors] = useState([]);
   const [genders, setGenders] = useState([]);
   const [reports, setReports] = useState(null);
+  const [discounts, setDiscounts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showProductForm, setShowProductForm] = useState(false);
+  const [showDiscountForm, setShowDiscountForm] = useState(false);
+  const [discountForm, setDiscountForm] = useState({
+    productId: '',
+    percentage: '',
+    active: true,
+  });
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
     name: '',
@@ -42,7 +50,7 @@ const Admin = () => {
   });
 
   useEffect(() => {
-    if (!isAdmin() && !isAdvanced()) {
+    if (!isAdmin() && !isManager()) {
       navigate('/');
       return;
     }
@@ -69,6 +77,9 @@ const Admin = () => {
           break;
         case 'reports':
           await loadReports();
+          break;
+        case 'discounts':
+          await loadDiscounts();
           break;
         default:
           break;
@@ -178,6 +189,63 @@ const Admin = () => {
     }
   };
 
+  const loadDiscounts = async () => {
+    const [discountsRes, productsRes] = await Promise.all([
+      discountAPI.getAll(),
+      productAPI.getAll(),
+    ]);
+    setDiscounts(discountsRes.data);
+    setProducts(productsRes.data);
+  };
+
+  const handleDiscountFormChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setDiscountForm({
+      ...discountForm,
+      [name]: type === 'checkbox' ? checked : value,
+    });
+  };
+
+  const handleCreateDiscount = async (e) => {
+    e.preventDefault();
+    try {
+      await discountAPI.create({
+        productId: parseInt(discountForm.productId),
+        percentage: parseFloat(discountForm.percentage),
+        active: discountForm.active,
+      });
+      setShowDiscountForm(false);
+      setDiscountForm({ productId: '', percentage: '', active: true });
+      loadDiscounts();
+    } catch (err) {
+      setError('Failed to create discount');
+    }
+  };
+
+  const handleToggleDiscount = async (id, currentActive) => {
+    try {
+      if (currentActive) {
+        await discountAPI.deactivate(id);
+      } else {
+        await discountAPI.activate(id);
+      }
+      loadDiscounts();
+    } catch (err) {
+      setError('Failed to update discount');
+    }
+  };
+
+  const handleDeleteDiscount = async (id) => {
+    if (window.confirm('Are you sure you want to delete this discount?')) {
+      try {
+        await discountAPI.delete(id);
+        loadDiscounts();
+      } catch (err) {
+        setError('Failed to delete discount');
+      }
+    }
+  };
+
   const handleProductFormChange = (e) => {
     setProductForm({
       ...productForm,
@@ -273,12 +341,20 @@ const Admin = () => {
         >
           Manage Data
         </button>
-        {(isAdmin() || isAdvanced()) && (
+        {(isAdmin() || isManager()) && (
           <button
             className={`tab-button ${activeTab === 'reports' ? 'active' : ''}`}
             onClick={() => setActiveTab('reports')}
           >
             Reports
+          </button>
+        )}
+        {isAdmin() && (
+          <button
+            className={`tab-button ${activeTab === 'discounts' ? 'active' : ''}`}
+            onClick={() => setActiveTab('discounts')}
+          >
+            Discounts
           </button>
         )}
       </div>
@@ -643,6 +719,128 @@ const Admin = () => {
                 ))}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'discounts' && (
+        <div className="admin-section">
+          <div className="section-header">
+            <h2>Discounts Management</h2>
+            <button
+              onClick={() => setShowDiscountForm(!showDiscountForm)}
+              className="btn btn-primary"
+            >
+              {showDiscountForm ? 'Cancel' : 'Add Discount'}
+            </button>
+          </div>
+
+          {showDiscountForm && (
+            <form onSubmit={handleCreateDiscount} className="admin-form">
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Product</label>
+                  <select
+                    name="productId"
+                    value={discountForm.productId}
+                    onChange={handleDiscountFormChange}
+                    required
+                    className="form-input"
+                  >
+                    <option value="">Select Product</option>
+                    {products.map((product) => (
+                      <option key={product.id} value={product.id}>
+                        {product.name} - ${parseFloat(product.price).toFixed(2)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Discount Percentage</label>
+                  <input
+                    type="number"
+                    name="percentage"
+                    value={discountForm.percentage}
+                    onChange={handleDiscountFormChange}
+                    required
+                    min="0"
+                    max="100"
+                    step="0.01"
+                    placeholder="e.g., 10 for 10%"
+                    className="form-input"
+                  />
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="checkbox"
+                      name="active"
+                      checked={discountForm.active}
+                      onChange={handleDiscountFormChange}
+                    />
+                    Active
+                  </label>
+                </div>
+              </div>
+              <button type="submit" className="btn btn-primary">
+                Create Discount
+              </button>
+            </form>
+          )}
+
+          <div className="admin-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Product</th>
+                  <th>Original Price</th>
+                  <th>Discount %</th>
+                  <th>Final Price</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {discounts.map((discount) => {
+                  const originalPrice = discount.Product?.price || 0;
+                  const finalPrice = originalPrice * (1 - discount.percentage / 100);
+                  return (
+                    <tr key={discount.id}>
+                      <td>#{discount.id}</td>
+                      <td>{discount.Product?.name || 'N/A'}</td>
+                      <td>${parseFloat(originalPrice).toFixed(2)}</td>
+                      <td>{discount.percentage}%</td>
+                      <td>${finalPrice.toFixed(2)}</td>
+                      <td>
+                        <span className={`status-badge status-${discount.active ? 'active' : 'inactive'}`}>
+                          {discount.active ? 'Active' : 'Inactive'}
+                        </span>
+                      </td>
+                      <td>
+                        <button
+                          onClick={() => handleToggleDiscount(discount.id, discount.active)}
+                          className={`btn btn-sm ${discount.active ? 'btn-secondary' : 'btn-primary'}`}
+                        >
+                          {discount.active ? 'Deactivate' : 'Activate'}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteDiscount(discount.id)}
+                          className="btn btn-danger btn-sm"
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+            {discounts.length === 0 && (
+              <p style={{ textAlign: 'center', padding: '20px', color: '#7f8c8d' }}>
+                No discounts found. Click "Add Discount" to create one.
+              </p>
+            )}
           </div>
         </div>
       )}

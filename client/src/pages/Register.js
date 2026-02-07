@@ -88,7 +88,7 @@ const Register = () => {
               className="form-input"
             >
               <option value={3}>Simple User</option>
-              <option value={2}>Advanced User</option>
+              <option value={2}>Manager</option>
               <option value={1}>Admin</option>
             </select>
           </div>

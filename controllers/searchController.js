@@ -5,6 +5,7 @@ const Brand = require('../models/Brand');
 const Color = require('../models/Color');
 const Size = require('../models/Size');
 const Gender = require('../models/Gender');
+const Discount = require('../models/Discount');
 const { searchProducts: esSearch, isConnected: esIsConnected } = require('../config/elasticsearch');
 
 // Advanced product search with multiple filters (Database fallback)
@@ -55,7 +56,8 @@ exports.searchProducts = async (req, res) => {
       { model: Brand, attributes: ['id', 'name'] },
       { model: Color, attributes: ['id', 'name'] },
       { model: Size, attributes: ['id', 'name'] },
-      { model: Gender, attributes: ['id', 'name'] }
+      { model: Gender, attributes: ['id', 'name'] },
+      { model: Discount, where: { active: true }, required: false, attributes: ['id', 'percentage', 'active'] }
     ];
 
     // Filter by product name or query (partial match)

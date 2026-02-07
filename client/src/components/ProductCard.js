@@ -9,7 +9,13 @@ const ProductCard = ({ product, onEdit }) => {
   const [added, setAdded] = useState(false);
 
   const handleAddToCart = () => {
-    addItem(product);
+    // Add product with discounted price if applicable
+    const productWithPrice = {
+      ...product,
+      price: discountedPrice,
+      originalPrice: activeDiscount ? originalPrice : null,
+    };
+    addItem(productWithPrice);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
@@ -22,6 +28,13 @@ const ProductCard = ({ product, onEdit }) => {
 
   const isOutOfStock = product.initialQuantity <= 0;
   const canEdit = user && (user.roleName === 'admin' || user.roleName === 'advanced');
+
+  // Check for active discount
+  const activeDiscount = product.Discounts?.find(d => d.active) || null;
+  const originalPrice = parseFloat(product.price);
+  const discountedPrice = activeDiscount
+    ? originalPrice * (1 - activeDiscount.percentage / 100)
+    : originalPrice;
 
   return (
     <div
@@ -63,7 +76,16 @@ const ProductCard = ({ product, onEdit }) => {
       <div className="product-details-minimal">
         <h3 className="product-name">{product.name}</h3>
         <p className="product-brand">{product.Brand?.name}</p>
-        <p className="product-price-minimal">${parseFloat(product.price).toFixed(2)}</p>
+
+        {activeDiscount ? (
+          <div className="product-price-minimal">
+            <span className="original-price">${originalPrice.toFixed(2)}</span>
+            <span className="discounted-price">${discountedPrice.toFixed(2)}</span>
+            <span className="discount-badge">-{activeDiscount.percentage}%</span>
+          </div>
+        ) : (
+          <p className="product-price-minimal">${originalPrice.toFixed(2)}</p>
+        )}
 
         <div className="product-meta">
           <span>{product.Color?.name}</span>
