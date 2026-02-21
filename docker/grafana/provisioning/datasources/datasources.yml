@@ -7,10 +7,11 @@ datasources:
   # Prometheus - Primary metrics source
   - name: Prometheus
     type: prometheus
+    uid: prometheus
     access: proxy
     url: http://nesnes-prometheus:9090
     isDefault: true
-    editable: false
+    editable: true
     jsonData:
       timeInterval: "15s"
       httpMethod: POST

@@ -9,7 +9,7 @@ services:
     container_name: nesnes-app
     restart: unless-stopped
     ports:
-      - "5000:5000"
+      - "5005:5000"
     environment:
       - NODE_ENV=production
       - PORT=5000

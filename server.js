@@ -10,6 +10,7 @@ const swaggerSpecs = require("./config/swagger");
 // GraphQL
 const { ApolloServer } = require("@apollo/server");
 const { expressMiddleware } = require("@apollo/server/express4");
+const { ApolloServerPluginLandingPageLocalDefault } = require("@apollo/server/plugin/landingPage/default");
 const typeDefs = require("./graphql/schema");
 const resolvers = require("./graphql/resolvers");
 
@@ -79,8 +80,21 @@ const userRoutes = require("./routes/userRoutes");
 // Primary API endpoint - use /api/v1/... for all new integrations
 app.use("/api/v1", apiV1Routes);
 
+// ====== /api/* ROUTES (Kong gateway compatibility) ======
+app.use("/api/auth", authRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/brands", brandRoutes);
+app.use("/api/sizes", sizeRoutes);
+app.use("/api/colors", colorRoutes);
+app.use("/api/genders", genderRoutes);
+app.use("/api/discounts", discountRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api/search", searchRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/users", userRoutes);
+
 // ====== LEGACY ROUTES (backwards compatibility) ======
-// These routes are deprecated and will be removed in future versions
 app.use("/auth", authRoutes);
 app.use("/products", productRoutes);
 app.use("/categories", categoryRoutes);
@@ -127,15 +141,19 @@ async function startServer() {
   const apolloServer = new ApolloServer({
     typeDefs,
     resolvers,
+    introspection: true,
+    plugins: [ApolloServerPluginLandingPageLocalDefault({ embed: true })],
   });
 
   // Start Apollo Server
   await apolloServer.start();
 
   // Apply GraphQL middleware
-  app.use("/graphql", expressMiddleware(apolloServer, {
-    context: async ({ req }) => ({ req }),
-  }));
+  app.use("/graphql",
+    (req, _res, next) => { if (req.body === undefined) req.body = {}; next(); },
+    express.json(),
+    expressMiddleware(apolloServer, { context: async ({ req }) => ({ req }) })
+  );
 
   // Sync database
   try {
