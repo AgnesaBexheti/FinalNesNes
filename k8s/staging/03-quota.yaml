@@ -1,0 +1,18 @@
+# Staging quota is at least double the dev environment (dev = 1 CPU → staging = 4 CPU).
+# Must accommodate 3 replicas per deployment + HPA headroom.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: staging-quota
+  namespace: staging
+  labels:
+    env: staging
+spec:
+  hard:
+    requests.cpu: "4"
+    requests.memory: "8Gi"
+    limits.cpu: "8"
+    limits.memory: "16Gi"
+    pods: "50"
+    services: "20"
+    persistentvolumeclaims: "15"

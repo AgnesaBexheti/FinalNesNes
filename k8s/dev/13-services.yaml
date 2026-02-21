@@ -1,0 +1,98 @@
+# Backend app — ClusterIP internal + NodePort for dev browser access
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-service
+  namespace: development
+  labels:
+    app: nesnes-app
+    env: development
+spec:
+  type: NodePort
+  selector:
+    app: nesnes-app
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+      nodePort: 30500
+---
+# Frontend — NodePort for dev browser access
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: development
+  labels:
+    app: nesnes-frontend
+    env: development
+spec:
+  type: NodePort
+  selector:
+    app: nesnes-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 30080
+---
+# Kong proxy — NodePort for external API access
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-service
+  namespace: development
+  labels:
+    app: kong
+    env: development
+spec:
+  type: NodePort
+  selector:
+    app: kong
+  ports:
+    - name: proxy
+      port: 8000
+      targetPort: 8000
+      nodePort: 30800
+    - name: admin
+      port: 8001
+      targetPort: 8001
+      nodePort: 30801
+---
+# Prometheus — NodePort for dev dashboard access
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: development
+  labels:
+    app: prometheus
+    env: development
+spec:
+  type: NodePort
+  selector:
+    app: prometheus
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+      nodePort: 30909
+---
+# Grafana — NodePort for dev dashboard access
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: development
+  labels:
+    app: grafana
+    env: development
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      nodePort: 30300

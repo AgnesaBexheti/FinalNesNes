@@ -1,0 +1,31 @@
+# PVCs for stateless workloads (Prometheus, Grafana) in development.
+# PostgreSQL, Redis, and Elasticsearch use volumeClaimTemplates inside their StatefulSets.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: prometheus-pvc
+  namespace: development
+  labels:
+    app: prometheus
+    env: development
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-pvc
+  namespace: development
+  labels:
+    app: grafana
+    env: development
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 500Mi

@@ -1,0 +1,96 @@
+# Backend app — ClusterIP for internal traffic (HPA + Kong proxy)
+apiVersion: v1
+kind: Service
+metadata:
+  name: app-service
+  namespace: staging
+  labels:
+    app: nesnes-app
+    env: staging
+spec:
+  type: ClusterIP
+  selector:
+    app: nesnes-app
+  ports:
+    - name: http
+      port: 5000
+      targetPort: 5000
+---
+# Frontend — NodePort for staging QA access
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: staging
+  labels:
+    app: nesnes-frontend
+    env: staging
+spec:
+  type: NodePort
+  selector:
+    app: nesnes-frontend
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 31080
+---
+# Kong — NodePort for staging API testing
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-service
+  namespace: staging
+  labels:
+    app: kong
+    env: staging
+spec:
+  type: NodePort
+  selector:
+    app: kong
+  ports:
+    - name: proxy
+      port: 8000
+      targetPort: 8000
+      nodePort: 31800
+    - name: admin
+      port: 8001
+      targetPort: 8001
+      nodePort: 31801
+---
+# Prometheus — ClusterIP (accessed through Grafana)
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: staging
+  labels:
+    app: prometheus
+    env: staging
+spec:
+  type: ClusterIP
+  selector:
+    app: prometheus
+  ports:
+    - name: http
+      port: 9090
+      targetPort: 9090
+---
+# Grafana — NodePort for staging dashboard access
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-service
+  namespace: staging
+  labels:
+    app: grafana
+    env: staging
+spec:
+  type: NodePort
+  selector:
+    app: grafana
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+      nodePort: 31300

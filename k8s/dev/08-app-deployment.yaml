@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  namespace: development
+  labels:
+    app: nesnes-app
+    env: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nesnes-app
+  template:
+    metadata:
+      labels:
+        app: nesnes-app
+        env: development
+    spec:
+      containers:
+        - name: nesnes-app
+          image: agnesabexheti/nesnes-backend:dev
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+          envFrom:
+            - configMapRef:
+                name: nesnes-config
+          env:
+            - name: DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: nesnes-secret
+                  key: DB_USER
+            - name: DB_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: nesnes-secret
+                  key: DB_PASS
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: nesnes-secret
+                  key: JWT_SECRET
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "200m"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /api
+              port: 5000
+            initialDelaySeconds: 40
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /api
+              port: 5000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3

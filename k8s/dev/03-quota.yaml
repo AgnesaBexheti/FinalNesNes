@@ -1,0 +1,18 @@
+# Development namespace is limited to 1 CPU core and 2Gi memory total.
+# This enforces resource discipline in dev.
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: dev-quota
+  namespace: development
+  labels:
+    env: development
+spec:
+  hard:
+    requests.cpu: "1"
+    requests.memory: "2Gi"
+    limits.cpu: "2"
+    limits.memory: "4Gi"
+    pods: "20"
+    services: "15"
+    persistentvolumeclaims: "10"
